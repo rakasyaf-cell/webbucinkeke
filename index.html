@@ -12,6 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
     <!-- Canvas Confetti -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
     
     <script>
         tailwind.config = {
@@ -344,7 +345,7 @@
                     <button onclick="closeUploadModal()" class="w-1/2 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl text-sm transition-colors">
                         Batal
                     </button>
-                    <button onclick="saveNewPhoto()" class="w-1/2 py-3 bg-gradient-to-r from-bucin-rose to-pink-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold rounded-xl text-sm shadow-md shadow-pink-200 transition-all active:scale-95">
+                    <button id="saveBtnUpload" onclick="saveNewPhoto()" class="w-1/2 py-3 bg-gradient-to-r from-bucin-rose to-pink-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold rounded-xl text-sm shadow-md shadow-pink-200 transition-all active:scale-95">
                         Simpan Foto ✨
                     </button>
                 </div>
@@ -407,7 +408,12 @@
     <!-- ==================== JAVASCRIPT LOGIC ==================== -->
     <script>
         
-        // Default initial romantic photos
+        // ==================== SUPABASE SETUP ====================
+        const SUPABASE_URL = 'https://rgzwddsuqsthvqiobaiy.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJnendkZHN1cXN0aHZxaW9iYWl5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5MDMzMDYsImV4cCI6MjEwMDQ3OTMwNn0.0hv_Z8wPdOGb__e3Y1eIlkPoL-uYcDpRqDuVrXV3dFk';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Default initial romantic photos (dipakai kalau tabel di Supabase masih kosong)
         const DEFAULT_PHOTOS = [
             {
                 url: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=600&q=80',
@@ -453,9 +459,9 @@
         let isMusicPlaying = false;
 
         // Initialize state on DOM Ready
-        window.addEventListener('DOMContentLoaded', () => {
+        window.addEventListener('DOMContentLoaded', async () => {
             initHeartsCanvas();
-            loadPhotosFromStorage();
+            await loadPhotosFromSupabase();
             renderGallery();
         });
 
@@ -501,23 +507,34 @@
         }
 
 
-        // Load photos from LocalStorage or Fallback to default
-        function loadPhotosFromStorage() {
-            const saved = localStorage.getItem('bucin_gallery_photos');
-            if (saved) {
-                try {
-                    photos = JSON.parse(saved);
-                } catch (e) {
-                    photos = [...DEFAULT_PHOTOS];
+        // Load photos from Supabase table 'photos'. Kalau tabel masih kosong,
+        // isi dulu dengan foto default supaya galeri gak kosong melompong.
+        async function loadPhotosFromSupabase() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('photos')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                if (data && data.length > 0) {
+                    photos = data;
+                } else {
+                    // Tabel kosong -> seed dengan foto default
+                    const { data: inserted, error: insertError } = await supabaseClient
+                        .from('photos')
+                        .insert(DEFAULT_PHOTOS)
+                        .select();
+
+                    if (insertError) throw insertError;
+                    photos = inserted || [...DEFAULT_PHOTOS];
                 }
-            } else {
+            } catch (err) {
+                console.error('Gagal load foto dari Supabase:', err);
+                alert('Gagal konek ke Supabase 😢 Cek console (F12) buat detail errornya, atau pastikan tabel "photos" sudah dibuat.');
                 photos = [...DEFAULT_PHOTOS];
             }
-        }
-
-        // Save photos to local storage
-        function savePhotosToStorage() {
-            localStorage.setItem('bucin_gallery_photos', JSON.stringify(photos));
         }
 
         // Render photo frames in main gallery and marquee
@@ -574,13 +591,27 @@
             }
         }
 
-        // Delete photo
-        function deletePhoto(index, e) {
+        // Delete photo (dari state lokal & dari Supabase)
+        async function deletePhoto(index, e) {
             e.stopPropagation();
-            if (confirm('Yakin mau hapus foto ini dari bingkai? 🥺')) {
-                photos.splice(index, 1);
-                savePhotosToStorage();
-                renderGallery();
+            if (!confirm('Yakin mau hapus foto ini dari bingkai? 🥺')) return;
+
+            const photo = photos[index];
+
+            // Hapus dulu dari tampilan biar responsif
+            photos.splice(index, 1);
+            renderGallery();
+
+            if (photo && photo.id) {
+                const { error } = await supabaseClient
+                    .from('photos')
+                    .delete()
+                    .eq('id', photo.id);
+
+                if (error) {
+                    console.error('Gagal hapus foto di Supabase:', error);
+                    alert('Waduh, gagal hapus foto di database 😢');
+                }
             }
         }
 
@@ -688,8 +719,8 @@
             document.getElementById('uploadPlaceholder').classList.remove('hidden');
         }
 
-        // Save new photo uploaded by user
-        function saveNewPhoto() {
+        // Save new photo (link) ke Supabase
+        async function saveNewPhoto() {
             const captionInput = document.getElementById('photoCaptionInput').value.trim();
             const caption = captionInput || 'Momen Bahagia Kita ✨';
 
@@ -705,8 +736,23 @@
                 animation: Math.random() > 0.5 ? 'animate-float' : 'animate-float-slow'
             };
 
-            photos.unshift(newPhoto); // Add to beginning
-            savePhotosToStorage();
+            const saveBtn = document.getElementById('saveBtnUpload');
+            if (saveBtn) { saveBtn.disabled = true; saveBtn.innerText = 'Menyimpan...'; }
+
+            const { data, error } = await supabaseClient
+                .from('photos')
+                .insert(newPhoto)
+                .select();
+
+            if (saveBtn) { saveBtn.disabled = false; saveBtn.innerText = 'Simpan Foto ✨'; }
+
+            if (error) {
+                console.error('Gagal simpan foto ke Supabase:', error);
+                alert('Gagal simpan foto ke database 😢 Cek console buat detailnya.');
+                return;
+            }
+
+            photos.unshift(data[0]); // Add to beginning (pakai data hasil insert yg sudah ada id-nya)
             renderGallery();
             closeUploadModal();
 
