@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>apakahh kamuu sayangg akuu? 💕</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Quicksand & Pacifico -->
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'bucin-pink': '#FF8FA3',
+                        'bucin-softpink': '#FFB3C1',
+                        'bucin-lightpink': '#FFF0F3',
+                        'bucin-cream': '#FFF5E4',
+                        'bucin-cream-dark': '#FFE3E1',
+                        'bucin-rose': '#FF4D6D'
+                    },
+                    fontFamily: {
+                        'romantic': ['Pacifico', 'cursive'],
+                        'body': ['Quicksand', 'sans-serif']
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px) rotate(0deg)' },
+                            '50%': { transform: 'translateY(-15px) rotate(3deg)' }
+                        },
+                        floatSlow: {
+                            '0%, 100%': { transform: 'translateY(0px) rotate(-2deg)' },
+                            '50%': { transform: 'translateY(-25px) rotate(4deg)' }
+                        },
+                        pulseHeart: {
+                            '0%, 100%': { transform: 'scale(1)' },
+                            '50%': { transform: 'scale(1.15)' }
+                        },
+                        shimmer: {
+                            '0%': { backgroundPosition: '-200% 0' },
+                            '100%': { backgroundPosition: '200% 0' }
+                        }
+                    },
+                    animation: {
+                        'float': 'float 4s ease-in-out infinite',
+                        'float-slow': 'floatSlow 6s ease-in-out infinite',
+                        'pulse-heart': 'pulseHeart 1.5s ease-in-out infinite',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: linear-gradient(135deg, #FFF0F3 0%, #FFF5E4 50%, #FFE3E1 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            user-select: none;
+        }
+
+        /* Canvas background for floating heart particles */
+        #heartCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Polaroid style photos with tape */
+        .polaroid-frame {
+            background: white;
+            padding: 12px 12px 28px 12px;
+            box-shadow: 0 10px 25px -5px rgba(255, 143, 163, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+            border-radius: 12px;
+            position: relative;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .polaroid-frame::before {
+            content: '';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%) rotate(-3deg);
+            width: 70px;
+            height: 22px;
+            background-color: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(2px);
+            border: 1px border rgba(255, 182, 193, 0.4);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            z-index: 10;
+        }
+
+        .polaroid-frame:hover {
+            transform: translateY(-10px) scale(1.03) rotate(0deg) !important;
+            z-index: 20;
+            box-shadow: 0 20px 30px -10px rgba(255, 77, 109, 0.4);
+        }
+
+        /* Hide scrollbars gracefully */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Glassmorphism cards */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 15px 35px rgba(255, 143, 163, 0.2);
+        }
+
+        /* Custom smooth movement for runaway button */
+        #btnNo {
+            transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s;
+        }
+    </style>
+</head>
+<body class="relative min-h-screen flex flex-col justify-between items-center text-slate-800 antialiased selection:bg-pink-300">
+
+    <!-- Floating Hearts Dynamic Canvas -->
+    <canvas id="heartCanvas"></canvas>
+
+    <!-- Background music audio element -->
+    <audio id="bgMusic" loop preload="auto">
+        <!-- Cute royalty free ambient love melody -->
+        <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=sweet-love-115269.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Music Toggle Floating Control -->
+    <button id="musicToggleBtn" onclick="toggleAudio()" title="Putar Musik Romantis" class="fixed bottom-5 right-5 z-50 w-12 h-12 rounded-full bg-white/90 text-bucin-rose shadow-lg flex items-center justify-center border-2 border-pink-200 hover:scale-110 active:scale-95 transition-all duration-300">
+        <i id="musicIcon" class="fa-solid fa-music text-lg animate-bounce"></i>
+    </button>
+
+
+    <!-- ==================== SCREEN 1: QUESTION SCREEN ==================== -->
+    <main id="screenQuestion" class="relative z-10 my-auto w-full max-w-md px-4 py-8 flex flex-col items-center justify-center transition-all duration-700 opacity-100 scale-100">
+        
+        <div class="glass-card w-full rounded-3xl p-6 sm:p-8 text-center relative flex flex-col items-center">
+            
+            <!-- Cute Top Heart Badge -->
+            <div class="w-20 h-20 bg-pink-100 rounded-full flex items-center justify-center mb-4 shadow-inner border-4 border-white animate-pulse-heart">
+                <span class="text-4xl">🥺</span>
+            </div>
+
+            <!-- Romantic Title -->
+            <h2 class="font-romantic text-2xl sm:text-3xl text-bucin-rose mb-2">aloo sayangggkuuu... 💕</h2>
+            <p class="text-slate-600 font-semibold text-base sm:text-lg mb-8 leading-relaxed">
+                akuu mauu nanyaa sesuatuu samaa kamuu...
+            </p>
+
+            <!-- Main Question Container -->
+            <div class="bg-gradient-to-r from-pink-50 via-rose-50 to-amber-50 p-6 rounded-2xl border border-pink-100 w-full mb-8 shadow-sm">
+                <h1 class="font-romantic text-2xl sm:text-3xl text-pink-600 tracking-wide">
+                    apakahh kamuu sayangg akuu? 💖
+                </h1>
+            </div>
+
+            <!-- Teasing Status Text (Changes when clicking/hovering 'Tidak') -->
+            <div id="teasingText" class="h-6 mb-4 text-xs sm:text-sm font-bold text-rose-500 opacity-0 transition-opacity duration-300">
+                hayoo! ndaa bisaaa dipencet yaaa! 😜
+            </div>
+
+            <!-- Buttons Area -->
+            <div id="buttonArea" class="relative w-full min-h-[120px] flex items-center justify-center gap-4 sm:gap-6">
+                <!-- YES BUTTON -->
+                <button id="btnYes" onclick="onSayYes()" class="z-20 px-8 py-3.5 bg-gradient-to-r from-bucin-rose to-pink-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold text-lg rounded-full shadow-lg shadow-pink-300/50 hover:shadow-xl hover:shadow-pink-400/60 transform hover:-translate-y-1 active:scale-95 transition-all duration-300 flex items-center gap-2">
+                    <span>Iyaa Bangettt!</span>
+                    <i class="fa-solid fa-heart text-white text-base"></i>
+                </button>
+
+                <!-- NO BUTTON (Runaway Button) -->
+                <button id="btnNo" onmouseover="dodgeButton()" onclick="dodgeButton()" ontouchstart="dodgeButton(event)" class="z-20 px-8 py-3.5 bg-slate-200 hover:bg-slate-300 text-slate-600 font-bold text-lg rounded-full shadow-md transition-all duration-200 flex items-center gap-2 cursor-pointer">
+                    <span>Tidak</span>
+                    <span class="text-sm">🙈</span>
+                </button>
+            </div>
+
+            <!-- Romantic Subtext Footer -->
+            <p class="text-xs text-slate-400 mt-6 font-medium">
+                *Coba ajaa klik tombol "Tidak" kalau bisa hiihihii😉
+            </p>
+        </div>
+    </main>
+
+
+    <!-- ==================== SCREEN 2: MAIN GALLERY & LOVE MEMORIES ==================== -->
+    <div id="screenGallery" class="hidden relative z-10 w-full min-h-screen flex flex-col items-center opacity-0 scale-95 transition-all duration-700 pb-16">
+        
+        <!-- TOP NAVIGATION BAR -->
+        <header class="w-full max-w-6xl px-4 py-4 flex items-center justify-between sticky top-0 z-40 bg-white/70 backdrop-blur-md border-b border-pink-100 shadow-sm">
+            <!-- Brand / Love Title -->
+            <div class="flex items-center gap-2">
+                <span class="text-2xl animate-bounce">💖</span>
+                <span class="font-romantic text-xl sm:text-2xl text-bucin-rose tracking-wide">Kenangan Kitaa</span>
+            </div>
+
+            <!-- TOP RIGHT BUTTONS: CAMERA ONLY & SONG UPLOAD -->
+            <div class="flex items-center gap-2.5">
+                <!-- Camera Button (Icon Only) -->
+                <button onclick="openUploadModal()" title="Tambah Foto" class="w-10 h-10 sm:w-11 sm:h-11 bg-gradient-to-r from-pink-400 to-bucin-rose hover:from-pink-500 hover:to-rose-600 text-white rounded-full shadow-md hover:shadow-pink-300 transition-all duration-300 active:scale-95 flex items-center justify-center">
+                    <i class="fa-solid fa-camera text-base sm:text-lg"></i>
+                </button>
+
+                <!-- Music Button (Add / Change Song) -->
+                <button onclick="openMusicModal()" title="Ganti Lagu Romantis" class="w-10 h-10 sm:w-11 sm:h-11 bg-gradient-to-r from-rose-400 to-amber-400 hover:from-rose-500 hover:to-amber-500 text-white rounded-full shadow-md hover:shadow-pink-300 transition-all duration-300 active:scale-95 flex items-center justify-center">
+                    <i class="fa-solid fa-music text-base sm:text-lg"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- MAIN GALLERY CONTENT -->
+        <div class="w-full max-w-5xl px-4 pt-6 flex flex-col items-center">
+
+            <!-- Romantic Banner Message -->
+            <div class="glass-card w-full rounded-3xl p-6 sm:p-8 mb-10 text-center relative overflow-hidden">
+                <div class="absolute -top-10 -right-10 w-32 h-32 bg-pink-200/50 rounded-full blur-2xl"></div>
+                <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-amber-200/50 rounded-full blur-2xl"></div>
+
+                <span class="inline-block px-4 py-1.5 bg-pink-100 text-bucin-rose rounded-full text-xs font-bold uppercase tracking-widest mb-3">
+                    hihii akuu tauu kamuu sayangg bgttt samaa akuu hiihii! 🥰
+                </span>
+                
+                <h1 class="font-romantic text-3xl sm:text-5xl text-bucin-rose mb-3">
+                    mamacii yaaa sayangggkuuu! ❤️
+                </h1>
+                
+                <p class="text-slate-600 max-w-xl mx-auto text-sm sm:text-base leading-relaxed">
+                    setiapp barengg kamuu tuhh akuu senangg bangett rasanyaa sayangg. akuu buatt inii untukk mengabadikann kenangann cintaa kitaa sayangg! ✨
+                </p>
+
+                <!-- Love Days Counter -->
+                <div class="mt-6 inline-flex items-center gap-3 bg-white/80 px-6 py-2.5 rounded-full border border-pink-200 shadow-sm">
+                    <i class="fa-solid fa-heart text-rose-500 animate-pulse"></i>
+                    <span class="text-xs sm:text-sm font-bold text-slate-700">akuu ituu sayangg kamuu harii inii besokk dann selamanyaa! ♾️</span>
+                </div>
+            </div>
+
+            <!-- MOVING / FLOATING PHOTO GALLERY GRID -->
+            <div class="w-full mb-8">
+                <div class="flex items-center justify-between mb-6 px-2">
+                    <h3 class="font-romantic text-2xl text-slate-700 flex items-center gap-2">
+                        <span>Bingkai Kenangan</span>
+                        <span class="text-sm font-body font-normal text-pink-500 bg-pink-50 px-3 py-1 rounded-full border border-pink-100">
+                            Bergerak & Interaktif ✨
+                        </span>
+                    </h3>
+                    <p class="text-xs text-slate-400">Sentuh untuk efek zoom!</p>
+                </div>
+
+                <!-- Dynamic Photo Frames Container -->
+                <div id="photosGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10">
+                    <!-- Dynamic frames injected by JS -->
+                </div>
+            </div>
+
+            <!-- INFINITE SCROLLING PHOTO REEL / MARQUEE -->
+            <div class="w-full mt-8 glass-card p-6 rounded-3xl overflow-hidden">
+                <h4 class="font-romantic text-xl text-pink-600 mb-4 text-center">
+                    Momen Indah Berputar 💕
+                </h4>
+                
+                <div class="relative w-full overflow-hidden no-scrollbar">
+                    <div id="marqueeContainer" class="flex gap-4 animate-[shimmer_20s_linear_infinite] hover:[animation-play-state:paused] py-2">
+                        <!-- Cloned image items for smooth continuous reel -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- ROMANTIC LOVE LETTER SECTION -->
+            <div class="w-full max-w-2xl mt-12 glass-card p-6 sm:p-8 rounded-3xl text-center relative">
+                <div class="text-4xl mb-3">💌</div>
+                <h3 class="font-romantic text-2xl text-bucin-rose mb-3">Pesan Spesial Untukmu</h3>
+                <p id="loveLetterText" class="text-slate-600 italic text-sm sm:text-base leading-relaxed font-medium">
+                    "kamuu tauu ndaa? kamuu ituu jadii alasan akuu selaluu senyumm setiapp hariii. makasii banyakk yaa udahh hadirr dii hidupkuu dann selaluu nemeninn akuu dii setiappp keadaan. hadirr kamuu benerr-benerr bikin harikuu terasa lebihh indahh dann lebihh berartii. akuu sayanggg bangett samaa kamuu, lebihh darii yangg bisaa akuu ungkapinn dengann kataa-kataa. semogaa kamuu selaluu ada dii sampingg akuu yaa. i lovee youu sooo muchhh, cintakuuuu ❤️🥹"
+
+                </p>
+                <div class="mt-4 pt-4 border-t border-pink-100 text-xs text-slate-400 font-bold uppercase tracking-wider">
+                    - darii Rakaa untukk Keyzaa yangg cantiikkk imutt lucuu dan menggemaskann bangettt 😉
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- ==================== UPLOAD PHOTO MODAL ==================== -->
+    <div id="uploadModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-300">
+        <div class="glass-card w-full max-w-md rounded-3xl p-6 sm:p-8 relative shadow-2xl transform scale-95 transition-transform duration-300 bg-white">
+            <!-- Close Button -->
+            <button onclick="closeUploadModal()" class="absolute top-4 right-4 w-9 h-9 bg-slate-100 hover:bg-rose-100 text-slate-500 hover:text-rose-600 rounded-full flex items-center justify-center transition-colors">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <!-- Modal Header -->
+            <div class="text-center mb-6">
+                <div class="w-14 h-14 bg-pink-100 text-bucin-rose rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-inner">
+                    <i class="fa-solid fa-image text-2xl"></i>
+                </div>
+                <h3 class="font-romantic text-2xl text-bucin-rose">Masukin Foto Baru 📸</h3>
+                <p class="text-slate-500 text-xs sm:text-sm mt-1">
+                    Tambahkan foto kebersamaan kamu ke bingkai bergerak!
+                </p>
+            </div>
+
+            <!-- Upload Form -->
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Pilih File Foto</label>
+                    <input type="file" id="photoFileInput" accept="image/*" class="hidden" onchange="previewSelectedImage(event)">
+                    
+                    <div onclick="document.getElementById('photoFileInput').click()" class="border-2 border-dashed border-pink-200 hover:border-pink-400 bg-pink-50/50 hover:bg-pink-50 rounded-2xl p-6 text-center cursor-pointer transition-all">
+                        <div id="uploadPlaceholder" class="flex flex-col items-center">
+                            <i class="fa-solid fa-cloud-arrow-up text-3xl text-pink-400 mb-2"></i>
+                            <span class="text-xs font-bold text-slate-600">Klik untuk cari foto di HP / Laptop</span>
+                            <span class="text-[10px] text-slate-400 mt-1">Format: JPG, PNG, WEBP</span>
+                        </div>
+                        <img id="imagePreview" class="hidden max-h-40 mx-auto rounded-lg shadow-md object-cover">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Keterangan Foto (Caption)</label>
+                    <input type="text" id="photoCaptionInput" placeholder="Contoh: Jalan-jalan bareng pacar 💕" class="w-full px-4 py-3 rounded-xl border border-pink-200 focus:border-bucin-rose focus:ring-2 focus:ring-pink-200 text-sm outline-none transition-all">
+                </div>
+
+                <div class="pt-2 flex gap-3">
+                    <button onclick="closeUploadModal()" class="w-1/2 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl text-sm transition-colors">
+                        Batal
+                    </button>
+                    <button onclick="saveNewPhoto()" class="w-1/2 py-3 bg-gradient-to-r from-bucin-rose to-pink-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold rounded-xl text-sm shadow-md shadow-pink-200 transition-all active:scale-95">
+                        Simpan Foto ✨
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ==================== UPLOAD MUSIC MODAL ==================== -->
+    <div id="musicModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-300">
+        <div class="glass-card w-full max-w-md rounded-3xl p-6 sm:p-8 relative shadow-2xl transform scale-95 transition-transform duration-300 bg-white">
+            <!-- Close Button -->
+            <button onclick="closeMusicModal()" class="absolute top-4 right-4 w-9 h-9 bg-slate-100 hover:bg-rose-100 text-slate-500 hover:text-rose-600 rounded-full flex items-center justify-center transition-colors">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <!-- Modal Header -->
+            <div class="text-center mb-6">
+                <div class="w-14 h-14 bg-amber-100 text-amber-500 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-inner">
+                    <i class="fa-solid fa-music text-2xl"></i>
+                </div>
+                <h3 class="font-romantic text-2xl text-bucin-rose">Masukin Lagu Favorit 🎵</h3>
+                <p class="text-slate-500 text-xs sm:text-sm mt-1">
+                    Upload lagu MP3 favorit kalian dari HP atau Laptop!
+                </p>
+            </div>
+
+            <!-- Upload Form -->
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Pilih File Musik (MP3 / Audio)</label>
+                    <input type="file" id="musicFileInput" accept="audio/*" class="hidden" onchange="previewSelectedMusic(event)">
+                    
+                    <div onclick="document.getElementById('musicFileInput').click()" class="border-2 border-dashed border-amber-200 hover:border-amber-400 bg-amber-50/50 hover:bg-amber-50 rounded-2xl p-6 text-center cursor-pointer transition-all">
+                        <div id="musicUploadPlaceholder" class="flex flex-col items-center">
+                            <i class="fa-solid fa-file-audio text-3xl text-amber-400 mb-2"></i>
+                            <span class="text-xs font-bold text-slate-600">Klik untuk cari lagu MP3 dari file kamu</span>
+                            <span class="text-[10px] text-slate-400 mt-1">Format: MP3, WAV, M4A, OGG</span>
+                        </div>
+                        <div id="musicFileName" class="hidden flex items-center justify-center gap-2 text-xs font-bold text-slate-700 p-2 bg-amber-100 rounded-xl">
+                            <i class="fa-solid fa-circle-check text-green-500"></i>
+                            <span id="selectedMusicName">Lagu terpilih</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-2 flex gap-3">
+                    <button onclick="closeMusicModal()" class="w-1/2 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl text-sm transition-colors">
+                        Batal
+                    </button>
+                    <button onclick="saveNewMusic()" class="w-1/2 py-3 bg-gradient-to-r from-amber-400 to-pink-500 hover:from-amber-500 hover:to-pink-600 text-white font-bold rounded-xl text-sm shadow-md shadow-pink-200 transition-all active:scale-95">
+                        Putar Lagu 🎶
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ==================== JAVASCRIPT LOGIC ==================== -->
+    <script>
+        
+        // Default initial romantic photos
+        const DEFAULT_PHOTOS = [
+            {
+                url: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=600&q=80',
+                caption: 'Momen Manis Bareng Kamu 🌸',
+                rotation: '-3deg',
+                animation: 'animate-float'
+            },
+            {
+                url: 'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=600&q=80',
+                caption: 'Tertawa Bersama 💕',
+                rotation: '2deg',
+                animation: 'animate-float-slow'
+            },
+            {
+                url: 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=600&q=80',
+                caption: 'Selalu Pegangan Tangan ✨',
+                rotation: '-2deg',
+                animation: 'animate-float'
+            },
+            {
+                url: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=600&q=80',
+                caption: 'Hari Bahagia Kita 🎉',
+                rotation: '4deg',
+                animation: 'animate-float-slow'
+            }
+        ];
+
+        // Teasing phrases when 'Tidak' button is hovered/clicked
+        const TEASING_MESSAGES = [
+            "Hayoo! ndaa bisa dipencet yaa! 😜",
+            "Masa gak sayang sih? Coba lagi! 🥺",
+            "Tombolnya kabur terus kan! 😂",
+            "Harus pilih 'Iya' dong sayang! ❤️",
+            "Gak ada kata 'Tidak' di kamus kita! ✨",
+            "Ups, hampir kenak! Wkwk 🤪",
+            "Pilih Iya aja, dapet peluk online! 🤗"
+        ];
+
+        let photos = [];
+        let dodgeCount = 0;
+        let selectedImageDataUrl = null;
+        let selectedAudioFileUrl = null;
+        let isMusicPlaying = false;
+
+        // Initialize state on DOM Ready
+        window.addEventListener('DOMContentLoaded', () => {
+            initHeartsCanvas();
+            loadPhotosFromStorage();
+            renderGallery();
+        });
+
+
+        // Runaway button dodging logic
+        function dodgeButton(event) {
+            if (event) event.preventDefault();
+
+            const btnNo = document.getElementById('btnNo');
+            const btnYes = document.getElementById('btnYes');
+            const teasingText = document.getElementById('teasingText');
+
+            dodgeCount++;
+
+            // Make YES button grow bigger as enticement
+            const currentScale = Math.min(1 + (dodgeCount * 0.08), 1.6);
+            btnYes.style.transform = `scale(${currentScale})`;
+
+            // Safe offset calculation based on viewport width (agar tidak keluar/hilang dari layar)
+            const isMobile = window.innerWidth < 640;
+            const maxOffsetX = isMobile ? 85 : 135;
+            const maxOffsetY = isMobile ? 55 : 85;
+
+            // Generate random X and Y offsets relative to initial position
+            let randomX = (Math.random() - 0.5) * 2 * maxOffsetX;
+            let randomY = (Math.random() - 0.5) * 2 * maxOffsetY;
+
+            // Ensure minimum jump distance so it clearly dodges to the side
+            if (Math.abs(randomX) < 40) {
+                randomX = randomX >= 0 ? 50 : -50;
+            }
+
+            // Apply smooth translation move
+            btnNo.style.transform = `translate(${randomX}px, ${randomY}px)`;
+
+            // Show teasing message
+            const randomMsg = TEASING_MESSAGES[Math.floor(Math.random() * TEASING_MESSAGES.length)];
+            teasingText.innerText = randomMsg;
+            teasingText.style.opacity = '1';
+
+            // Add cute styling effect
+            btnNo.classList.add('bg-rose-200', 'text-rose-700');
+        }
+
+
+        // Load photos from LocalStorage or Fallback to default
+        function loadPhotosFromStorage() {
+            const saved = localStorage.getItem('bucin_gallery_photos');
+            if (saved) {
+                try {
+                    photos = JSON.parse(saved);
+                } catch (e) {
+                    photos = [...DEFAULT_PHOTOS];
+                }
+            } else {
+                photos = [...DEFAULT_PHOTOS];
+            }
+        }
+
+        // Save photos to local storage
+        function savePhotosToStorage() {
+            localStorage.setItem('bucin_gallery_photos', JSON.stringify(photos));
+        }
+
+        // Render photo frames in main gallery and marquee
+        function renderGallery() {
+            const grid = document.getElementById('photosGrid');
+            const marquee = document.getElementById('marqueeContainer');
+            
+            grid.innerHTML = '';
+            marquee.innerHTML = '';
+
+            const animations = ['animate-float', 'animate-float-slow'];
+
+            photos.forEach((photo, index) => {
+                const rot = photo.rotation || `${(index % 2 === 0 ? -1 : 1) * (2 + (index % 3))}deg`;
+                const anim = photo.animation || animations[index % animations.length];
+
+                // Render Polaroid Card
+                const card = document.createElement('div');
+                card.className = `polaroid-frame ${anim} flex flex-col items-center group cursor-pointer`;
+                card.style.transform = `rotate(${rot})`;
+                
+                card.innerHTML = `
+                    <div class="relative w-full h-64 sm:h-72 rounded-lg overflow-hidden bg-pink-50 mb-3 border border-slate-100">
+                        <img src="${photo.url}" alt="Memory" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" onerror="this.src='https://placehold.co/600x600/FFB3C1/FFF?text=Foto+Cinta'">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3">
+                            <span class="text-white text-xs font-semibold"><i class="fa-solid fa-heart text-rose-400 mr-1"></i> Sayang Banget</span>
+                        </div>
+                    </div>
+                    <p class="font-romantic text-lg text-slate-700 text-center px-2 line-clamp-1">${photo.caption}</p>
+                    <button onclick="deletePhoto(${index}, event)" class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 bg-red-500/80 hover:bg-red-600 text-white w-7 h-7 rounded-full flex items-center justify-center text-xs transition-all duration-200 shadow-md">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                `;
+
+                grid.appendChild(card);
+
+                // Render Marquee item
+                const marqueeItem = document.createElement('div');
+                marqueeItem.className = 'flex-shrink-0 w-36 sm:w-44 h-36 sm:h-44 rounded-2xl overflow-hidden border-2 border-white shadow-md relative group';
+                marqueeItem.innerHTML = `
+                    <img src="${photo.url}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
+                `;
+                marquee.appendChild(marqueeItem);
+            });
+
+            // Duplicate marquee items for seamless loop
+            if (photos.length > 0) {
+                photos.forEach((photo) => {
+                    const clone = document.createElement('div');
+                    clone.className = 'flex-shrink-0 w-36 sm:w-44 h-36 sm:h-44 rounded-2xl overflow-hidden border-2 border-white shadow-md relative group';
+                    clone.innerHTML = `<img src="${photo.url}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">`;
+                    marquee.appendChild(clone);
+                });
+            }
+        }
+
+        // Delete photo
+        function deletePhoto(index, e) {
+            e.stopPropagation();
+            if (confirm('Yakin mau hapus foto ini dari bingkai? 🥺')) {
+                photos.splice(index, 1);
+                savePhotosToStorage();
+                renderGallery();
+            }
+        }
+
+        // Open Upload Modal
+        function openUploadModal() {
+            const modal = document.getElementById('uploadModal');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            modal.querySelector('.glass-card').classList.remove('scale-95');
+            modal.querySelector('.glass-card').classList.add('scale-100');
+        }
+
+        // Close Upload Modal
+        function closeUploadModal() {
+            const modal = document.getElementById('uploadModal');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            modal.querySelector('.glass-card').classList.remove('scale-100');
+            modal.querySelector('.glass-card').classList.add('scale-95');
+            
+            // Reset input form
+            document.getElementById('photoFileInput').value = '';
+            document.getElementById('photoCaptionInput').value = '';
+            document.getElementById('imagePreview').classList.add('hidden');
+            document.getElementById('uploadPlaceholder').classList.remove('hidden');
+            selectedImageDataUrl = null;
+        }
+
+        // Open Music Modal
+        function openMusicModal() {
+            const modal = document.getElementById('musicModal');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            modal.querySelector('.glass-card').classList.remove('scale-95');
+            modal.querySelector('.glass-card').classList.add('scale-100');
+        }
+
+        // Close Music Modal
+        function closeMusicModal() {
+            const modal = document.getElementById('musicModal');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            modal.querySelector('.glass-card').classList.remove('scale-100');
+            modal.querySelector('.glass-card').classList.add('scale-95');
+            
+            document.getElementById('musicFileInput').value = '';
+            document.getElementById('musicFileName').classList.add('hidden');
+            document.getElementById('musicUploadPlaceholder').classList.remove('hidden');
+        }
+
+        // Preview selected music file
+        function previewSelectedMusic(event) {
+            const file = event.target.files[0];
+            if (file) {
+                selectedAudioFileUrl = URL.createObjectURL(file);
+                document.getElementById('selectedMusicName').innerText = file.name;
+                document.getElementById('musicFileName').classList.remove('hidden');
+                document.getElementById('musicUploadPlaceholder').classList.add('hidden');
+            }
+        }
+
+        // Save and play custom uploaded music
+        function saveNewMusic() {
+            if (!selectedAudioFileUrl) {
+                alert('Pilih file musik MP3 terlebih dahulu ya! 🎵');
+                return;
+            }
+
+            const audio = document.getElementById('bgMusic');
+            audio.src = selectedAudioFileUrl;
+            playAudio();
+            closeMusicModal();
+
+            // Confetti celebration
+            confetti({
+                particleCount: 40,
+                spread: 50,
+                origin: { y: 0.6 }
+            });
+        }
+
+        // Preview selected image file
+        function previewSelectedImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    selectedImageDataUrl = e.target.result;
+                    const preview = document.getElementById('imagePreview');
+                    preview.src = selectedImageDataUrl;
+                    preview.classList.remove('hidden');
+                    document.getElementById('uploadPlaceholder').classList.add('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Save new photo uploaded by user
+        function saveNewPhoto() {
+            const captionInput = document.getElementById('photoCaptionInput').value.trim();
+            const caption = captionInput || 'Momen Bahagia Kita ✨';
+
+            if (!selectedImageDataUrl) {
+                alert('Pilih foto terlebih dahulu ya sayang! 📸');
+                return;
+            }
+
+            const newPhoto = {
+                url: selectedImageDataUrl,
+                caption: caption,
+                rotation: `${(Math.random() > 0.5 ? 1 : -1) * (2 + Math.floor(Math.random() * 4))}deg`,
+                animation: Math.random() > 0.5 ? 'animate-float' : 'animate-float-slow'
+            };
+
+            photos.unshift(newPhoto); // Add to beginning
+            savePhotosToStorage();
+            renderGallery();
+            closeUploadModal();
+
+            // Trigger love confetti celebration
+            confetti({
+                particleCount: 50,
+                spread: 60,
+                origin: { y: 0.7 }
+            });
+        }
+
+
+        // Action when user clicks "Iya Banget!"
+        function onSayYes() {
+            // Heart Confetti Explosion
+            const count = 200;
+            const defaults = { origin: { y: 0.7 } };
+
+            function fire(particleRatio, opts) {
+                confetti(Object.assign({}, defaults, opts, {
+                    particleCount: Math.floor(count * particleRatio)
+                }));
+            }
+
+            fire(0.25, { spread: 26, startVelocity: 55, colors: ['#FF4D6D', '#FF8FA3'] });
+            fire(0.2, { spread: 60, colors: ['#FFF', '#FFB3C1'] });
+            fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+            fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+            fire(0.1, { spread: 120, startVelocity: 45 });
+
+            // Start Audio automatically on interaction
+            playAudio();
+
+            // Transition Screen 1 out
+            const screen1 = document.getElementById('screenQuestion');
+            const screen2 = document.getElementById('screenGallery');
+
+            screen1.classList.add('opacity-0', 'scale-90');
+            
+            setTimeout(() => {
+                screen1.classList.add('hidden');
+                screen2.classList.remove('hidden');
+                
+                // Trigger screen 2 fade in
+                setTimeout(() => {
+                    screen2.classList.remove('opacity-0', 'scale-95');
+                    screen2.classList.add('opacity-100', 'scale-100');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }, 50);
+
+            }, 500);
+        }
+
+        // Toggle Audio Playback
+        function toggleAudio() {
+            const music = document.getElementById('bgMusic');
+            if (isMusicPlaying) {
+                music.pause();
+                isMusicPlaying = false;
+                document.getElementById('musicIcon').className = 'fa-solid fa-music text-lg';
+            } else {
+                playAudio();
+            }
+        }
+
+        function playAudio() {
+            const music = document.getElementById('bgMusic');
+            music.play().then(() => {
+                isMusicPlaying = true;
+                document.getElementById('musicIcon').className = 'fa-solid fa-compact-disc text-lg animate-spin text-bucin-rose';
+            }).catch(e => {
+                console.log("Audio autoplay prevented by browser policy", e);
+            });
+        }
+
+        // Floating Hearts Canvas Logic
+        function initHeartsCanvas() {
+            const canvas = document.getElementById('heartCanvas');
+            const ctx = canvas.getContext('2d');
+
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+
+            const heartsArray = [];
+            const heartTypes = ['💗', '💕', '💖', '❤️', '🌸', '✨', '💓'😘];
+
+            class HeartParticle {
+                constructor() {
+                    this.reset();
+                }
+
+                reset() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = canvas.height + 20;
+                    this.size = Math.random() * 20 + 14;
+                    this.speedY = Math.random() * 1.5 + 0.8;
+                    this.speedX = Math.sin(Math.random() * Math.PI) * 0.8;
+                    this.symbol = heartTypes[Math.floor(Math.random() * heartTypes.length)];
+                    this.opacity = Math.random() * 0.7 + 0.3;
+                    this.rotation = Math.random() * 360;
+                    this.rotationSpeed = (Math.random() - 0.5) * 2;
+                }
+
+                update() {
+                    this.y -= this.speedY;
+                    this.x += Math.sin(this.y * 0.01) * 0.5;
+                    this.rotation += this.rotationSpeed;
+
+                    if (this.y < -30) {
+                        this.reset();
+                    }
+                }
+
+                draw() {
+                    ctx.save();
+                    ctx.globalAlpha = this.opacity;
+                    ctx.font = `${this.size}px sans-serif`;
+                    ctx.translate(this.x, this.y);
+                    ctx.rotate((this.rotation * Math.PI) / 180);
+                    ctx.fillText(this.symbol, 0, 0);
+                    ctx.restore();
+                }
+            }
+
+            // Create heart particles pool
+            const heartCount = window.innerWidth < 640 ? 25 : 45;
+            for (let i = 0; i < heartCount; i++) {
+                const heart = new HeartParticle();
+                heart.y = Math.random() * canvas.height; // Distribute initially
+                heartsArray.push(heart);
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                heartsArray.forEach(heart => {
+                    heart.update();
+                    heart.draw();
+                });
+                requestAnimationFrame(animate);
+            }
+
+            animate();
+        }
+    </script>
+</body>
+</html>
