@@ -97,7 +97,7 @@
             height: 22px;
             background-color: rgba(255, 255, 255, 0.65);
             backdrop-filter: blur(2px);
-            border: 1px border rgba(255, 182, 193, 0.4);
+            border: 1px solid rgba(255, 182, 193, 0.4);
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
             z-index: 10;
         }
@@ -322,16 +322,16 @@
             <!-- Upload Form -->
             <div class="space-y-4">
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Pilih File Foto</label>
-                    <input type="file" id="photoFileInput" accept="image/*" class="hidden" onchange="previewSelectedImage(event)">
-                    
-                    <div onclick="document.getElementById('photoFileInput').click()" class="border-2 border-dashed border-pink-200 hover:border-pink-400 bg-pink-50/50 hover:bg-pink-50 rounded-2xl p-6 text-center cursor-pointer transition-all">
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Link Gambar (URL)</label>
+                    <input type="url" id="photoUrlInput" placeholder="https://s6.top4top.io/p_xxxxxx.jpg" oninput="previewImageFromUrl()" class="w-full px-4 py-3 rounded-xl border border-pink-200 focus:border-bucin-rose focus:ring-2 focus:ring-pink-200 text-sm outline-none transition-all">
+                    <p class="text-[10px] text-slate-400 mt-1.5">Upload dulu fotomu ke <a href="https://top4top.io" target="_blank" class="text-bucin-rose underline">top4top.io</a> atau situs sejenis, lalu tempel link gambarnya (link langsung .jpg/.png) di sini.</p>
+
+                    <div class="mt-3 border-2 border-dashed border-pink-200 bg-pink-50/50 rounded-2xl p-6 text-center transition-all">
                         <div id="uploadPlaceholder" class="flex flex-col items-center">
-                            <i class="fa-solid fa-cloud-arrow-up text-3xl text-pink-400 mb-2"></i>
-                            <span class="text-xs font-bold text-slate-600">Klik untuk cari foto di HP / Laptop</span>
-                            <span class="text-[10px] text-slate-400 mt-1">Format: JPG, PNG, WEBP</span>
+                            <i class="fa-solid fa-link text-3xl text-pink-400 mb-2"></i>
+                            <span class="text-xs font-bold text-slate-600">Preview foto bakal muncul di sini</span>
                         </div>
-                        <img id="imagePreview" class="hidden max-h-40 mx-auto rounded-lg shadow-md object-cover">
+                        <img id="imagePreview" class="hidden max-h-40 mx-auto rounded-lg shadow-md object-cover" onerror="handleImagePreviewError()" onload="handleImagePreviewLoad()">
                     </div>
                 </div>
 
@@ -600,7 +600,7 @@
             modal.querySelector('.glass-card').classList.add('scale-95');
             
             // Reset input form
-            document.getElementById('photoFileInput').value = '';
+            document.getElementById('photoUrlInput').value = '';
             document.getElementById('photoCaptionInput').value = '';
             document.getElementById('imagePreview').classList.add('hidden');
             document.getElementById('uploadPlaceholder').classList.remove('hidden');
@@ -658,20 +658,34 @@
             });
         }
 
-        // Preview selected image file
-        function previewSelectedImage(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    selectedImageDataUrl = e.target.result;
-                    const preview = document.getElementById('imagePreview');
-                    preview.src = selectedImageDataUrl;
-                    preview.classList.remove('hidden');
-                    document.getElementById('uploadPlaceholder').classList.add('hidden');
-                };
-                reader.readAsDataURL(file);
+        // Preview image from pasted URL
+        function previewImageFromUrl() {
+            const url = document.getElementById('photoUrlInput').value.trim();
+            const preview = document.getElementById('imagePreview');
+            const placeholder = document.getElementById('uploadPlaceholder');
+
+            if (!url) {
+                selectedImageDataUrl = null;
+                preview.classList.add('hidden');
+                placeholder.classList.remove('hidden');
+                return;
             }
+
+            selectedImageDataUrl = url;
+            preview.src = url;
+        }
+
+        // Called when the preview image finishes loading successfully
+        function handleImagePreviewLoad() {
+            document.getElementById('imagePreview').classList.remove('hidden');
+            document.getElementById('uploadPlaceholder').classList.add('hidden');
+        }
+
+        // Called when the preview image link is broken / fails to load
+        function handleImagePreviewError() {
+            selectedImageDataUrl = null;
+            document.getElementById('imagePreview').classList.add('hidden');
+            document.getElementById('uploadPlaceholder').classList.remove('hidden');
         }
 
         // Save new photo uploaded by user
@@ -680,7 +694,7 @@
             const caption = captionInput || 'Momen Bahagia Kita ✨';
 
             if (!selectedImageDataUrl) {
-                alert('Pilih foto terlebih dahulu ya sayang! 📸');
+                alert('Masukin link foto yang valid dulu ya sayang! 📸');
                 return;
             }
 
