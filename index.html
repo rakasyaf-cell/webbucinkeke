@@ -46,12 +46,17 @@
                         shimmer: {
                             '0%': { backgroundPosition: '-200% 0' },
                             '100%': { backgroundPosition: '200% 0' }
+                        },
+                        marqueeRight: {
+                            '0%': { transform: 'translateX(-50%)' },
+                            '100%': { transform: 'translateX(0%)' }
                         }
                     },
                     animation: {
                         'float': 'float 4s ease-in-out infinite',
                         'float-slow': 'floatSlow 6s ease-in-out infinite',
                         'pulse-heart': 'pulseHeart 1.5s ease-in-out infinite',
+                        'marquee-right': 'marqueeRight 22s linear infinite',
                     }
                 }
             }
@@ -272,16 +277,24 @@
             </div>
 
             <!-- INFINITE SCROLLING PHOTO REEL / MARQUEE -->
-            <div class="w-full mt-8 glass-card p-6 rounded-3xl overflow-hidden">
-                <h4 class="font-romantic text-xl text-pink-600 mb-4 text-center">
-                    Momen Indah Berputar 💕
-                </h4>
-                
-                <div class="relative w-full overflow-hidden no-scrollbar">
-                    <div id="marqueeContainer" class="flex gap-4 animate-[shimmer_20s_linear_infinite] hover:[animation-play-state:paused] py-2">
+            <div class="w-full mt-8 glass-card p-6 sm:p-7 rounded-3xl overflow-hidden relative">
+                <div class="absolute -top-8 -left-8 w-28 h-28 bg-pink-200/40 rounded-full blur-2xl pointer-events-none"></div>
+                <div class="absolute -bottom-8 -right-8 w-28 h-28 bg-amber-200/40 rounded-full blur-2xl pointer-events-none"></div>
+
+                <div class="flex items-center justify-center gap-2 mb-5">
+                    <span class="text-lg animate-pulse-heart">💫</span>
+                    <h4 class="font-romantic text-xl sm:text-2xl text-pink-600 text-center">
+                        Momen Indah Berputar
+                    </h4>
+                    <span class="text-lg animate-pulse-heart">💕</span>
+                </div>
+
+                <div class="relative w-full overflow-hidden no-scrollbar" style="mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%); -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);">
+                    <div id="marqueeContainer" class="flex gap-4 sm:gap-5 w-max animate-marquee-right hover:[animation-play-state:paused] py-2">
                         <!-- Cloned image items for smooth continuous reel -->
                     </div>
                 </div>
+                <p class="text-center text-[11px] text-slate-400 mt-3 font-semibold">arahkan kursor untuk jeda sebentar ✨</p>
             </div>
 
             <!-- ROMANTIC LOVE LETTER SECTION -->
@@ -573,9 +586,11 @@
 
                 // Render Marquee item
                 const marqueeItem = document.createElement('div');
-                marqueeItem.className = 'flex-shrink-0 w-36 sm:w-44 h-36 sm:h-44 rounded-2xl overflow-hidden border-2 border-white shadow-md relative group';
+                marqueeItem.className = 'flex-shrink-0 w-36 sm:w-44 h-36 sm:h-44 rounded-2xl overflow-hidden border-2 border-white shadow-[0_6px_18px_-4px_rgba(255,143,163,0.45)] relative group transition-transform duration-300 hover:-translate-y-1.5 hover:shadow-[0_12px_24px_-6px_rgba(255,77,109,0.5)]';
                 marqueeItem.innerHTML = `
-                    <img src="${photo.url}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
+                    <img src="${photo.url}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" onerror="this.src='https://placehold.co/400x400/FFB3C1/FFF?text=💕'">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <span class="absolute bottom-1.5 right-1.5 text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-300">💗</span>
                 `;
                 marquee.appendChild(marqueeItem);
             });
@@ -584,8 +599,12 @@
             if (photos.length > 0) {
                 photos.forEach((photo) => {
                     const clone = document.createElement('div');
-                    clone.className = 'flex-shrink-0 w-36 sm:w-44 h-36 sm:h-44 rounded-2xl overflow-hidden border-2 border-white shadow-md relative group';
-                    clone.innerHTML = `<img src="${photo.url}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">`;
+                    clone.className = 'flex-shrink-0 w-36 sm:w-44 h-36 sm:h-44 rounded-2xl overflow-hidden border-2 border-white shadow-[0_6px_18px_-4px_rgba(255,143,163,0.45)] relative group transition-transform duration-300 hover:-translate-y-1.5 hover:shadow-[0_12px_24px_-6px_rgba(255,77,109,0.5)]';
+                    clone.innerHTML = `
+                        <img src="${photo.url}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" onerror="this.src='https://placehold.co/400x400/FFB3C1/FFF?text=💕'">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <span class="absolute bottom-1.5 right-1.5 text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-300">💗</span>
+                    `;
                     marquee.appendChild(clone);
                 });
             }
