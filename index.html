@@ -665,7 +665,7 @@
                 card.style.transform = `rotate(${rot})`;
                 
                 card.innerHTML = `
-                    <div class="relative w-full h-64 sm:h-72 rounded-lg overflow-hidden bg-pink-50 mb-3 border border-slate-100">
+                    <div class="relative w-full aspect-[4/5] rounded-lg overflow-hidden bg-pink-50 mb-3 border border-slate-100">
                         <img src="${photo.url}" alt="Memory" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" onerror="this.src='https://placehold.co/600x600/FFB3C1/FFF?text=Foto+Cinta'">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3">
                             <span class="text-white text-xs font-semibold"><i class="fa-solid fa-heart text-rose-400 mr-1"></i> Sayang Banget</span>
