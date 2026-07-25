@@ -50,6 +50,11 @@
                         marqueeRight: {
                             '0%': { transform: 'translateX(-50%)' },
                             '100%': { transform: 'translateX(0%)' }
+                        },
+                        shake: {
+                            '0%, 100%': { transform: 'translateX(0)' },
+                            '20%, 60%': { transform: 'translateX(-8px)' },
+                            '40%, 80%': { transform: 'translateX(8px)' }
                         }
                     },
                     animation: {
@@ -57,6 +62,7 @@
                         'float-slow': 'floatSlow 6s ease-in-out infinite',
                         'pulse-heart': 'pulseHeart 1.5s ease-in-out infinite',
                         'marquee-right': 'marqueeRight 22s linear infinite',
+                        'shake': 'shake 0.4s ease-in-out',
                     }
                 }
             }
@@ -186,13 +192,13 @@
             <!-- Buttons Area -->
             <div id="buttonArea" class="relative w-full min-h-[120px] flex items-center justify-center gap-4 sm:gap-6">
                 <!-- YES BUTTON -->
-                <button id="btnYes" onclick="onSayYes()" class="z-20 px-8 py-3.5 bg-gradient-to-r from-bucin-rose to-pink-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold text-lg rounded-full shadow-lg shadow-pink-300/50 hover:shadow-xl hover:shadow-pink-400/60 transform hover:-translate-y-1 active:scale-95 transition-all duration-300 flex items-center gap-2">
+                <button id="btnYes" onclick="onSayYes()" class="z-20 px-5 py-3 text-sm sm:px-8 sm:py-3.5 sm:text-lg bg-gradient-to-r from-bucin-rose to-pink-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold rounded-full shadow-lg shadow-pink-300/50 hover:shadow-xl hover:shadow-pink-400/60 transform hover:-translate-y-1 active:scale-95 transition-all duration-300 flex items-center gap-2 whitespace-nowrap">
                     <span>Iyaa Bangettt!</span>
-                    <i class="fa-solid fa-heart text-white text-base"></i>
+                    <i class="fa-solid fa-heart text-white text-sm sm:text-base"></i>
                 </button>
 
                 <!-- NO BUTTON (Runaway Button) -->
-                <button id="btnNo" onmouseover="dodgeButton()" onclick="dodgeButton()" ontouchstart="dodgeButton(event)" class="z-20 px-8 py-3.5 bg-slate-200 hover:bg-slate-300 text-slate-600 font-bold text-lg rounded-full shadow-md transition-all duration-200 flex items-center gap-2 cursor-pointer">
+                <button id="btnNo" onmouseover="dodgeButton()" onclick="dodgeButton()" ontouchstart="dodgeButton(event)" class="z-20 px-5 py-3 text-sm sm:px-8 sm:py-3.5 sm:text-lg bg-slate-200 hover:bg-slate-300 text-slate-600 font-bold rounded-full shadow-md transition-all duration-200 flex items-center gap-2 cursor-pointer whitespace-nowrap">
                     <span>Tidak</span>
                     <span class="text-sm">🙈</span>
                 </button>
@@ -232,7 +238,7 @@
         </header>
 
         <!-- MAIN GALLERY CONTENT -->
-        <div class="w-full max-w-5xl px-4 pt-6 flex flex-col items-center">
+        <div class="w-full max-w-6xl px-4 pt-6 flex flex-col items-center">
 
             <!-- Romantic Banner Message -->
             <div class="glass-card w-full rounded-3xl p-6 sm:p-8 mb-10 text-center relative overflow-hidden">
@@ -271,7 +277,7 @@
                 </div>
 
                 <!-- Dynamic Photo Frames Container -->
-                <div id="photosGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10">
+                <div id="photosGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8 lg:gap-10">
                     <!-- Dynamic frames injected by JS -->
                 </div>
             </div>
@@ -290,7 +296,7 @@
                 </div>
 
                 <div class="relative w-full overflow-hidden no-scrollbar" style="mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%); -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);">
-                    <div id="marqueeContainer" class="flex gap-4 sm:gap-5 w-max animate-marquee-right hover:[animation-play-state:paused] py-2">
+                    <div id="marqueeContainer" class="flex gap-3 sm:gap-5 w-max animate-marquee-right hover:[animation-play-state:paused] py-2">
                         <!-- Cloned image items for smooth continuous reel -->
                     </div>
                 </div>
@@ -298,7 +304,7 @@
             </div>
 
             <!-- ROMANTIC LOVE LETTER SECTION -->
-            <div class="w-full max-w-2xl mt-12 glass-card p-6 sm:p-8 rounded-3xl text-center relative">
+            <div class="w-full max-w-2xl lg:max-w-3xl mt-12 glass-card p-6 sm:p-8 rounded-3xl text-center relative">
                 <div class="text-4xl mb-3">💌</div>
                 <h3 class="font-romantic text-2xl text-bucin-rose mb-3">Pesan Spesial Untukmu</h3>
                 <p id="loveLetterText" class="text-slate-600 italic text-sm sm:text-base leading-relaxed font-medium">
@@ -358,7 +364,7 @@
                     <button onclick="closeUploadModal()" class="w-1/2 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl text-sm transition-colors">
                         Batal
                     </button>
-                    <button id="saveBtnUpload" onclick="saveNewPhoto()" class="w-1/2 py-3 bg-gradient-to-r from-bucin-rose to-pink-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold rounded-xl text-sm shadow-md shadow-pink-200 transition-all active:scale-95">
+                    <button id="saveBtnUpload" onclick="confirmSavePhotoWithPassword()" class="w-1/2 py-3 bg-gradient-to-r from-bucin-rose to-pink-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold rounded-xl text-sm shadow-md shadow-pink-200 transition-all active:scale-95">
                         Simpan Foto ✨
                     </button>
                 </div>
@@ -418,6 +424,43 @@
     </div>
 
 
+    <!-- ==================== PASSWORD CONFIRM MODAL ==================== -->
+    <div id="passwordModal" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-300">
+        <div id="passwordModalBox" class="glass-card w-full max-w-sm rounded-3xl p-6 sm:p-8 relative shadow-2xl transform scale-95 transition-transform duration-300 bg-white">
+            <!-- Close Button -->
+            <button onclick="closePasswordModal()" class="absolute top-4 right-4 w-9 h-9 bg-slate-100 hover:bg-rose-100 text-slate-500 hover:text-rose-600 rounded-full flex items-center justify-center transition-colors">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <!-- Modal Header -->
+            <div class="text-center mb-6">
+                <div class="w-14 h-14 bg-rose-100 text-bucin-rose rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-inner">
+                    <i class="fa-solid fa-lock text-2xl"></i>
+                </div>
+                <h3 id="passwordModalTitle" class="font-romantic text-2xl text-bucin-rose">Butuh Password 🔐</h3>
+                <p id="passwordModalMessage" class="text-slate-500 text-xs sm:text-sm mt-1">
+                    Masukin password dulu ya sebelum lanjut!
+                </p>
+            </div>
+
+            <!-- Password Form -->
+            <div class="space-y-3">
+                <input type="password" id="passwordInput" placeholder="Masukin password rahasia kalian..." onkeydown="if(event.key==='Enter'){confirmPasswordModal();}" class="w-full px-4 py-3 rounded-xl border border-pink-200 focus:border-bucin-rose focus:ring-2 focus:ring-pink-200 text-sm outline-none transition-all text-center tracking-widest">
+                <p id="passwordError" class="hidden text-rose-500 text-xs font-bold text-center">Password salah, coba lagi yaa! 😳</p>
+
+                <div class="pt-2 flex gap-3">
+                    <button onclick="closePasswordModal()" class="w-1/2 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl text-sm transition-colors">
+                        Batal
+                    </button>
+                    <button onclick="confirmPasswordModal()" class="w-1/2 py-3 bg-gradient-to-r from-bucin-rose to-pink-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold rounded-xl text-sm shadow-md shadow-pink-200 transition-all active:scale-95">
+                        Konfirmasi ✨
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     <!-- ==================== JAVASCRIPT LOGIC ==================== -->
     <script>
         
@@ -470,6 +513,58 @@
         let selectedImageDataUrl = null;
         let selectedAudioFileUrl = null;
         let isMusicPlaying = false;
+
+        // ==================== PASSWORD PROTECTION ====================
+        // Ganti password ini sesuka kalian berdua ya sayang! 🔐
+        const SECRET_PASSWORD = 'iloveyou';
+        let pendingPasswordAction = null;
+
+        // Buka modal password. `onConfirm` dipanggil kalau password benar.
+        function openPasswordModal(title, message, onConfirm) {
+            pendingPasswordAction = onConfirm;
+            document.getElementById('passwordModalTitle').innerText = title;
+            document.getElementById('passwordModalMessage').innerText = message;
+            document.getElementById('passwordError').classList.add('hidden');
+            const input = document.getElementById('passwordInput');
+            input.value = '';
+
+            const modal = document.getElementById('passwordModal');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            modal.querySelector('.glass-card').classList.remove('scale-95');
+            modal.querySelector('.glass-card').classList.add('scale-100');
+
+            setTimeout(() => input.focus(), 250);
+        }
+
+        function closePasswordModal() {
+            const modal = document.getElementById('passwordModal');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            modal.querySelector('.glass-card').classList.remove('scale-100');
+            modal.querySelector('.glass-card').classList.add('scale-95');
+            document.getElementById('passwordInput').value = '';
+            document.getElementById('passwordError').classList.add('hidden');
+            pendingPasswordAction = null;
+        }
+
+        function confirmPasswordModal() {
+            const input = document.getElementById('passwordInput');
+            const errorEl = document.getElementById('passwordError');
+
+            if (input.value === SECRET_PASSWORD) {
+                const action = pendingPasswordAction;
+                closePasswordModal();
+                if (action) action();
+            } else {
+                errorEl.classList.remove('hidden');
+                input.value = '';
+                input.focus();
+
+                const box = document.getElementById('passwordModalBox');
+                box.classList.remove('animate-shake');
+                void box.offsetWidth; // reflow biar animasi bisa diulang
+                box.classList.add('animate-shake');
+            }
+        }
 
         // Initialize state on DOM Ready
         window.addEventListener('DOMContentLoaded', async () => {
@@ -586,7 +681,7 @@
 
                 // Render Marquee item
                 const marqueeItem = document.createElement('div');
-                marqueeItem.className = 'flex-shrink-0 w-36 sm:w-44 h-36 sm:h-44 rounded-2xl overflow-hidden border-2 border-white shadow-[0_6px_18px_-4px_rgba(255,143,163,0.45)] relative group transition-transform duration-300 hover:-translate-y-1.5 hover:shadow-[0_12px_24px_-6px_rgba(255,77,109,0.5)]';
+                marqueeItem.className = 'flex-shrink-0 w-28 sm:w-44 h-28 sm:h-44 rounded-2xl overflow-hidden border-2 border-white shadow-[0_6px_18px_-4px_rgba(255,143,163,0.45)] relative group transition-transform duration-300 hover:-translate-y-1.5 hover:shadow-[0_12px_24px_-6px_rgba(255,77,109,0.5)]';
                 marqueeItem.innerHTML = `
                     <img src="${photo.url}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" onerror="this.src='https://placehold.co/400x400/FFB3C1/FFF?text=💕'">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -599,7 +694,7 @@
             if (photos.length > 0) {
                 photos.forEach((photo) => {
                     const clone = document.createElement('div');
-                    clone.className = 'flex-shrink-0 w-36 sm:w-44 h-36 sm:h-44 rounded-2xl overflow-hidden border-2 border-white shadow-[0_6px_18px_-4px_rgba(255,143,163,0.45)] relative group transition-transform duration-300 hover:-translate-y-1.5 hover:shadow-[0_12px_24px_-6px_rgba(255,77,109,0.5)]';
+                    clone.className = 'flex-shrink-0 w-28 sm:w-44 h-28 sm:h-44 rounded-2xl overflow-hidden border-2 border-white shadow-[0_6px_18px_-4px_rgba(255,143,163,0.45)] relative group transition-transform duration-300 hover:-translate-y-1.5 hover:shadow-[0_12px_24px_-6px_rgba(255,77,109,0.5)]';
                     clone.innerHTML = `
                         <img src="${photo.url}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" onerror="this.src='https://placehold.co/400x400/FFB3C1/FFF?text=💕'">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -610,11 +705,18 @@
             }
         }
 
-        // Delete photo (dari state lokal & dari Supabase)
-        async function deletePhoto(index, e) {
+        // Delete photo - minta password dulu sebelum benar-benar dihapus
+        function deletePhoto(index, e) {
             e.stopPropagation();
-            if (!confirm('Yakin mau hapus foto ini dari bingkai? 🥺')) return;
+            openPasswordModal(
+                'Hapus Foto Ini? 🥺',
+                'Masukin password dulu ya, biar foto kenangan gak sembarangan kehapus orang lain!',
+                () => performDeletePhoto(index)
+            );
+        }
 
+        // Eksekusi hapus foto (dari state lokal & dari Supabase) setelah password benar
+        async function performDeletePhoto(index) {
             const photo = photos[index];
 
             // Hapus dulu dari tampilan biar responsif
@@ -736,6 +838,20 @@
             selectedImageDataUrl = null;
             document.getElementById('imagePreview').classList.add('hidden');
             document.getElementById('uploadPlaceholder').classList.remove('hidden');
+        }
+
+        // Cek dulu ada link foto yang valid, lalu minta password sebelum menyimpan
+        function confirmSavePhotoWithPassword() {
+            if (!selectedImageDataUrl) {
+                alert('Masukin link foto yang valid dulu ya sayang! 📸');
+                return;
+            }
+
+            openPasswordModal(
+                'Simpan Foto Baru 🔐',
+                'Masukin password dulu ya sebelum nambahin foto ke bingkai kenangan!',
+                () => saveNewPhoto()
+            );
         }
 
         // Save new photo (link) ke Supabase
